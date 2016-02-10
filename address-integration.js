@@ -66,12 +66,9 @@
             var $element = this.$element;
             if($element.val()) {
                 plugin.checkAddress();
-            } else {
-                $element.data('addressIntegrationStatus', 'empty');
             }
             $element
             .on( plugin.events, function() {
-                $element.data('addressIntegrationStatus', 'event-fired');
                 plugin.settings.callbackEventFired.apply(plugin);
             })
             .on( plugin.events,
@@ -95,7 +92,6 @@
             var address = $element.val();
             plugin.showLoader();
             plugin.lastValue = $element.val();
-            $element.data('addressIntegrationStatus', 'in-progress');
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
             this.geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
@@ -125,7 +121,6 @@
             plugin.fullAddress = results;
             plugin.hideLoader();
             plugin.setFields(plugin.fullAddress);
-            $element.data('addressIntegrationStatus', 'success');
             if (callbackSuccess) { callbackSuccess.apply(plugin); }
         },
         checkAddressFail: function(errorMessage, callbackError) {
@@ -137,7 +132,6 @@
             if(plugin.settings.clearFieldsOnError) {
                 plugin.clearFields();
             }
-            $element.data('addressIntegrationStatus', 'fail');
             if (callbackError) { callbackError.apply(plugin); }
         },
         setFields: function(results) {
