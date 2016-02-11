@@ -5,19 +5,29 @@
 
     //constructor
     var addressIntegrationObj = function (element, options) {
-        this.settings = $.extend({}, addressIntegrationInterface.defaults, options);
-        this.$element = $(element);
-        this.guid = guid;
-        this.eventPrefix = '.addressIntegration'+this.guid;
-        this.fullAddress = null;
-        this.errors = null;
-        this.lastValue = null;
-        this.stopped = false;
-        this.events = addPrefixesToEvents(this.settings.events, this.eventPrefix);
+        var plugin = this;
+
+        plugin.guid = guid;
+
+        plugin.settings = $.extend({}, addressIntegrationInterface.defaults, options);
+        plugin.$element = $(element);
+
+        plugin.eventPrefix = '.addressIntegration'+plugin.guid;
+        plugin.events = addPrefixesToEvents(plugin.settings.events, plugin.eventPrefix);
+
+        plugin.errors = null;
+        plugin.lastValue = null;
+        plugin.querries = 0;
+
         if(!geocoder) {
             geocoder = new google.maps.Geocoder();
         }
-        this.geocoder = geocoder;
+        plugin.geocoder = geocoder;
+
+        plugin.debounce = $.debounce( plugin.settings.debounceEventsTime, function() {
+            plugin.settings.callbackEventFiredAfterDebounceTime.apply(plugin);
+            plugin.checkAddress();
+        });
     }
 
     //helper functions
@@ -31,7 +41,7 @@
         return tmp;
     }
 
-    var getDataFromGoogleMaps = function (results, addressComponent, longOrShortName) {
+    var getDataFromGeocodingResponse = function (results, addressComponent, longOrShortName) {
         var a = results[0].address_components;
         var data;
         for(var i = 0; i < a.length; ++i) {
@@ -65,108 +75,135 @@
         init: function() {
             var plugin = this;
             var $element = this.$element;
+
             if($element.val()) {
                 plugin.checkAddress();
             }
-            $element
-            .on( plugin.events, function() {
-                plugin.settings.callbackEventFired.apply(plugin);
-            })
-            .on( plugin.events,
-                $.debounce( plugin.settings.throttleEventsTime, function() {
-                    if( ($element.val() !== plugin.lastValue) || (plugin.errors in errorsMessages) ) {
-                        plugin.checkAddress();
-                    }
-                })
-            );
+
+            $element.on( plugin.events, function() {
+                if( ($element.val() !== plugin.lastValue) || (plugin.errors in errorsMessages) ) {
+                    plugin.settings.callbackEventFired.apply(plugin);
+                    plugin.debounce();
+                }
+            });
+
         },
         // this function check address and execute calbacks from settings
         checkAddress: function() {
             var plugin = this;
             var $element = this.$element;
-            plugin.checkAddressCustom(true, plugin.settings.callbackSuccess, plugin.settings.callbackError, plugin.settings.callbackInProgress);
+
+            plugin.checkAddressCustom(plugin.settings.callbackSuccess, plugin.settings.callbackError, plugin.settings.callbackInProgress);
         },
         // this function check address and execute calbacks from parameters
-        checkAddressCustom: function(setFieldsBoolean, callbackSuccess, callbackError, callbackInProgress) {
+        checkAddressCustom: function(callbackSuccess, callbackError, callbackInProgress) {
             var plugin = this;
             var $element = this.$element;
-            var address = $element.val();
-            if(!plugin.stopped) {
-                plugin.showLoader();
-                plugin.lastValue = $element.val();
-                if (callbackInProgress) { callbackInProgress.apply(plugin); }
-                this.geocoder.geocode({ 'address': address }, function (results, status) {
-                    if (status == google.maps.GeocoderStatus.OK) {
-                        geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
-                            if (status == google.maps.GeocoderStatus.OK) {
-                                if (results[1]) {
-                                    plugin.checkAddressSuccess(results, setFieldsBoolean, callbackSuccess);
-                                } else {
-                                    plugin.checkAddressFail('NO_RESULTS', callbackError);
-                                }
+
+            plugin.querries++;
+            var callbackNumber = plugin.querries;
+
+            plugin.lastValue = $element.val();
+            var address = plugin.lastValue;
+
+            plugin.showLoader();
+
+            if (callbackInProgress) { callbackInProgress.apply(plugin); }
+
+            this.geocoder.geocode({ 'address': address }, function (results, status) {
+
+                if (status == google.maps.GeocoderStatus.OK) {
+
+                    geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            if (results[1]) {
+
+                                //success
+                                plugin.queue(callbackNumber, function() {
+                                    plugin.checkAddressSuccess(results, callbackSuccess);
+                                });
+
                             } else {
-                                plugin.checkAddressFail(status, callbackError);
+
+                                //fail
+                                plugin.queue(callbackNumber, function() {
+                                    plugin.checkAddressFail('NO_RESULTS', callbackError);
+                                });
+
                             }
-                        });
-                    } else {
+                        } else {
+
+                            //fail
+                            plugin.queue(callbackNumber, function() {
+                                plugin.checkAddressFail(status, callbackError);
+                            });
+
+                        }
+                    });
+
+                } else {
+
+                    //fail
+                    plugin.queue(callbackNumber, function() {
                         plugin.checkAddressFail(status, callbackError);
-                    }
-                });
+                    });
+
+                }
+
+            });
+
+        },
+        //execute callback only for last request
+        queue: function(callbackNumber, callback) {
+            var plugin = this;
+
+            if(callbackNumber === plugin.querries) {
+                callback();
             }
         },
-        checkAddressSuccess: function(results, setFieldsBoolean, callbackSuccess) {
+        //success callback for function checkAddressCustom
+        checkAddressSuccess: function(results, callbackSuccess) {
             var plugin = this;
             var $element = this.$element;
-            if(!plugin.stopped) {
-                if(plugin.errors !== null) {
-                    plugin.errors = null;
-                    plugin.hideErrors();
-                }
-                plugin.fullAddress = results;
-                plugin.hideLoader();
-                if(setFieldsBoolean) {
-                    plugin.setFields(plugin.fullAddress);
-                }
-                if (callbackSuccess) { callbackSuccess.apply(plugin); }
+
+            if(plugin.errors !== null) {
+                plugin.errors = null;
+                plugin.hideErrors();
             }
+
+            plugin.hideLoader();
+            plugin.setFields(results);
+
+            if (callbackSuccess) { callbackSuccess.apply(plugin); }
         },
+        //fail callback for function checkAddressCustom
         checkAddressFail: function(errorMessage, callbackError) {
             var plugin = this;
             var $element = this.$element;
-            if(!plugin.stopped) {
-                plugin.errors = errorMessage;
-                plugin.hideLoader();
-                plugin.showErrors();
-                if(plugin.settings.clearFieldsOnError) {
-                    plugin.clearFields();
-                }
-                if (callbackError) { callbackError.apply(plugin); }
-            }
+
+            plugin.errors = errorMessage;
+
+            plugin.hideLoader();
+            plugin.showErrors();
+
+            if (callbackError) { callbackError.apply(plugin); }
         },
+        //set values for inputs from settings
         setFields: function(results) {
             var plugin = this;
-            if (plugin.settings.countrySelector) { $(plugin.settings.countrySelector).val(getDataFromGoogleMaps(results, 'country', 'long_name')); }
-            if (plugin.settings.countryShortSelector) { $(plugin.settings.countryShortSelector).val(getDataFromGoogleMaps(results, 'country', 'short_name')); }
-            if (plugin.settings.citySelector) { $(plugin.settings.citySelector).val(getDataFromGoogleMaps(results, 'locality', 'long_name')); }
-            if (plugin.settings.stateSelector) { $(plugin.settings.stateSelector).val(getDataFromGoogleMaps(results, 'administrative_area_level_1', 'long_name')); }
-            if (plugin.settings.stateShortSelector) { $(plugin.settings.stateShortSelector).val(getDataFromGoogleMaps(results, 'administrative_area_level_1', 'short_name')); }
-            if (plugin.settings.postalCodeSelector) { $(plugin.settings.postalCodeSelector).val(getDataFromGoogleMaps(results, 'postal_code', 'long_name')); }
-            if (plugin.settings.routeSelector) { $(plugin.settings.routeSelector).val(getDataFromGoogleMaps(results, 'route', 'long_name')); }
-            if (plugin.settings.streetNumberSelector) { $(plugin.settings.streetNumberSelector).val(getDataFromGoogleMaps(results, 'street_number', 'long_name')); }
-        },
-        clearFields: function(results) {
-            var plugin = this;
-            if (plugin.settings.countrySelector) { $(plugin.settings.countrySelector).val(""); }
-            if (plugin.settings.countryShortSelector) { $(plugin.settings.countryShortSelector).val(""); }
-            if (plugin.settings.citySelector) { $(plugin.settings.citySelector).val(""); }
-            if (plugin.settings.stateSelector) { $(plugin.settings.stateSelector).val(""); }
-            if (plugin.settings.stateShortSelector) { $(plugin.settings.stateShortSelector).val(""); }
-            if (plugin.settings.postalCodeSelector) { $(plugin.settings.postalCodeSelector).val(""); }
-            if (plugin.settings.routeSelector) { $(plugin.settings.routeSelector).val(""); }
-            if (plugin.settings.streetNumberSelector) { $(plugin.settings.streetNumberSelector).val(""); }
+
+            if (plugin.settings.countrySelector) { $(plugin.settings.countrySelector).val(getDataFromGeocodingResponse(results, 'country', 'long_name')); }
+            if (plugin.settings.countryShortSelector) { $(plugin.settings.countryShortSelector).val(getDataFromGeocodingResponse(results, 'country', 'short_name')); }
+            if (plugin.settings.citySelector) { $(plugin.settings.citySelector).val(getDataFromGeocodingResponse(results, 'locality', 'long_name')); }
+            if (plugin.settings.stateSelector) { $(plugin.settings.stateSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name')); }
+            if (plugin.settings.stateShortSelector) { $(plugin.settings.stateShortSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'short_name')); }
+            if (plugin.settings.postalCodeSelector) { $(plugin.settings.postalCodeSelector).val(getDataFromGeocodingResponse(results, 'postal_code', 'long_name')); }
+            if (plugin.settings.routeSelector) { $(plugin.settings.routeSelector).val(getDataFromGeocodingResponse(results, 'route', 'long_name')); }
+            if (plugin.settings.streetNumberSelector) { $(plugin.settings.streetNumberSelector).val(getDataFromGeocodingResponse(results, 'street_number', 'long_name')); }
         },
         showErrors: function() {
             var plugin = this;
+
             if(plugin.errors === 'ZERO_RESULTS' || plugin.errors === 'NO_RESULTS') {
                 $(plugin.settings.messageSelector).text(plugin.settings.customErrorMessage).show();
             } else {
@@ -179,32 +216,27 @@
         },
         hideErrors: function() {
             var plugin = this;
+
             $(plugin.settings.messageSelector).hide().empty();
         },
         showLoader: function() {
             var plugin = this;
+
             $(plugin.settings.loaderSelector).show();
         },
         hideLoader: function() {
             var plugin = this;
+
             $(plugin.settings.loaderSelector).hide();
-        },
-        stop: function() {
-            var plugin = this;
-            plugin.stopped = true;
-            plugin.lastValue = null;
-            plugin.hideLoader();
-        },
-        restore: function() {
-            var plugin = this;
-            plugin.stopped = false;
         },
         unbindEvents: function() {
             var plugin = this;
+
             plugin.$element.off(plugin.eventPrefix);
         },
         destroy: function() {
             var plugin = this;
+
             plugin.unbindEvents();
             plugin.$element.data('addressIntegration', null);
         }
@@ -213,6 +245,7 @@
     //plugin
     function addressIntegrationInterface(methodOrOptions) {
         var methodsParameters = Array.prototype.slice.call( arguments, 1 );
+
         return this.each(function () {
             if (!$(this).data('addressIntegration')) {
                 var plugin = new addressIntegrationObj(this, methodOrOptions);
@@ -233,24 +266,24 @@
 
     //defaults options
     addressIntegrationInterface.defaults = {
-        events:                  'propertychange change click keyup input paste',
-        throttleEventsTime:      250, //debounce time for events
-        countrySelector:         '#country', // can be set to false
-        countryShortSelector:    '#country_short', // can be set to false
-        citySelector:            '#city',  // can be set to false
-        stateSelector:           '#state', // can be set to false
-        stateShortSelector:      '#state_short', // can be set to false
-        postalCodeSelector:      '#postal_code', // can be set to false
-        routeSelector:           '#route', // can be set to false
-        streetNumberSelector:    '#street_number', // can be set to false
-        loaderSelector:          '#addressIntegrationLoader',
-        messageSelector:         '#addressIntegrationMessages',
-        customErrorMessage:      'No results for given data, the given place propably does not exist.',
-        clearFieldsOnError:      false,
-        callbackEventFired:      function() {  },
-        callbackInProgress:      function() {  },
-        callbackSuccess:         function() {  },
-        callbackError:           function() {  }
+        events:                                     'propertychange change click keyup input paste',
+        debounceEventsTime:                         250, //debounce time for events
+        countrySelector:                            '#country', // can be set to false
+        countryShortSelector:                       '#country_short', // can be set to false
+        citySelector:                               '#city',  // can be set to false
+        stateSelector:                              '#state', // can be set to false
+        stateShortSelector:                         '#state_short', // can be set to false
+        postalCodeSelector:                         '#postal_code', // can be set to false
+        routeSelector:                              '#route', // can be set to false
+        streetNumberSelector:                       '#street_number', // can be set to false
+        loaderSelector:                             '#addressIntegrationLoader',
+        messageSelector:                            '#addressIntegrationMessages',
+        customErrorMessage:                         'No results for given data, the given place propably does not exist.',
+        callbackEventFired:                         function() {  },
+        callbackEventFiredAfterDebounceTime:        function() {  },
+        callbackInProgress:                         function() {  },
+        callbackSuccess:                            function() {  },
+        callbackError:                              function() {  }
     };
 
     $.fn.addressIntegration = addressIntegrationInterface;

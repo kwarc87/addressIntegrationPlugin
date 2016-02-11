@@ -100,6 +100,8 @@
             </form>
         </div>
 
+        <h3 id="status"></h3>
+
         <footer class="footer">
             <p class="text-muted text-center">&copy; 2016 Jakub Kwarciński - <a href="http://portfolio-kwarc.pl">portfolio-kwarc.pl</a> </p>
         </footer>
@@ -125,26 +127,36 @@
 
         $(document).ready(function(){
 
-            $("#address").addressIntegration();
+            $("#address").addressIntegration({
+                callbackEventFired:                         function() {
+                    $("#check-address").attr("disabled", true);
+                    $("#status").text('event fired').data('status', 'event fired');
+                },
+                callbackEventFiredAfterDebounceTime:        function() {
+                    $("#check-address").attr("disabled", false);
+                    $("#status").text('event fired after debounce time').data('status', 'event fired after debounce time');
+                },
+                callbackInProgress:        function() {
+                    $("#status").text('in progress').data('status', 'in progress');
+                },
+                callbackSuccess:        function() {
+                    $("#status").text('success').data('status', 'success');
+                },
+                callbackError:          function() {
+                    $("#status").text('error').data('status', 'error');
+                }
+            });
 
             $("#check-address").on("click", function(e) {
                 e.preventDefault();
-                $("#check-address").attr("disabled", true);
-                $("#address").attr("disabled", true);
-                $("#address").addressIntegration('checkAddressCustom', false, addressIntegrationCallbackSuccess, addressIntegrationCallbackFail);
+                if($("#status").data('status') === 'success') {
+                    console.log("You can go further!");
+                } else if ($("#status").data('status') === 'error') {
+                    console.log("Error in address input!")
+                } else {
+                    console.log($("#status").data('status'));
+                }
             });
-
-            function addressIntegrationCallbackSuccess() {
-                $("#check-address").attr("disabled", false);
-                $("#address").attr("disabled", false);
-                alert("You can go further.")
-            }
-
-            function addressIntegrationCallbackFail() {
-                $("#check-address").attr("disabled", false);
-                $("#address").attr("disabled", false);
-                alert("Errors!")
-            }
 
         });
 
