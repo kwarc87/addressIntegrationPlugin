@@ -19,7 +19,6 @@
         }
         plugin.geocoder = geocoder;
         plugin.debounce = $.debounce( plugin.settings.debounceEventsTime, function() {
-            plugin.settings.callbackEventFiredAfterDebounceTime.apply(plugin);
             plugin.checkAddress();
         });
     }
@@ -228,7 +227,7 @@
         debounceEventsTime:                         250, //debounce time for events
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
-        countryShortSelector:                       '#country_short, #hidden_country_short', // can be set to false
+        countryShortSelector:                       '#country_short', // can be set to false
         citySelector:                               '#city',  // can be set to false
         stateSelector:                              '#state', // can be set to false
         stateShortSelector:                         '#state_short', // can be set to false
@@ -238,7 +237,6 @@
         loaderSelector:                             '#addressIntegrationLoader',
         messageSelector:                            '#addressIntegrationMessages',
         callbackEventFired:                         function() {  },
-        callbackEventFiredAfterDebounceTime:        function() {  },
         callbackInProgress:                         function() {  },
         callbackSuccess:                            function() {  },
         callbackError:                              function() {  }

@@ -32,9 +32,9 @@
         }
         .integration-loader {
             position: absolute;
-            width: 30px;
-            bottom: 2px;
-            right: 4px;
+            width: 40px;
+            bottom: 3px;
+            right: 3px;
             z-index: 10;
         }
     </style>
@@ -91,7 +91,7 @@
                     <input type="text" class="form-control" id="street_number" name="street_number" placeholder="Street number">
                 </div>
                 <input type="hidden" id="hidden_country_short" name="hidden_country_short">
-                <button id="check-address" type="submit" class="btn btn-primary btn-lg btn-block">Check Address</button>
+                <button id="check-address" type="submit" class="btn btn-primary btn-lg btn-block">Next Step</button>
             </form>
         </div>
 
@@ -121,42 +121,43 @@
         $(document).ready(function(){
 
             $("#address").addressIntegration({
-                callbackEventFired:                         function() {
+                countryShortSelector:      '#country_short, #hidden_country_short',
+                debounceEventsTime:        200,
+                callbackEventFired:        function() {
                     $("#check-address").attr("disabled", true);
                     $("#status").text('event fired').data('status', 'event fired');
-                },
-                callbackEventFiredAfterDebounceTime:        function() {
-                    $("#check-address").attr("disabled", false);
-                    $("#status").text('event fired after debounce time').data('status', 'event fired after debounce time');
                 },
                 callbackInProgress:        function() {
                     $("#status").text('in progress').data('status', 'in progress');
                 },
-                callbackSuccess:        function() {
+                callbackSuccess:           function() {
+                    $("#check-address").attr("disabled", false);
                     $("#status").text('success').data('status', 'success');
                 },
-                callbackError:          function() {
+                callbackError:             function() {
+                    $("#check-address").attr("disabled", false);
                     $("#status").text('error').data('status', 'error');
                 }
             });
 
             $("#check-address").on("click", function(e) {
                 e.preventDefault();
-                if($("#status").data('status') === 'success') {
-                    if($("#hidden_country_short").val()) {
+                if($("#status").data('status')) {
+                    if($("#status").data('status') === 'success') {
+
                         if($("#hidden_country_short").val() === "US") {
                             $("#messages span").text("You can go further!");
                         } else {
                             $("#messages span").text("Given address is not from US!");
                         }
-                    } else {
-                        $("#messages span").text("I can't find the country!");
-                    }
 
-                } else if ($("#status").data('status') === 'error') {
-                    $("#messages span").text("Error in address input!");
+                    } else if ($("#status").data('status') === 'error') {
+                        $("#messages span").text("Error in address input!");
+                    } else {
+                        $("#messages span").text("In progress, status: " + $("#status").data('status'));
+                    }
                 } else {
-                    $("#messages span").text($("#status").data('status'));
+                    $("#messages span").text('You did not enter any address.');
                 }
             });
 
