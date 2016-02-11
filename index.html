@@ -122,7 +122,7 @@
 
             $("#address").addressIntegration({
                 countryShortSelector:      '#country_short, #hidden_country_short',
-                debounceEventsTime:        200,
+                debounceEventsTime:        350,
                 callbackEventFired:        function() {
                     $("#check-address").attr("disabled", true);
                     $("#status").text('event fired').data('status', 'event fired');
@@ -133,15 +133,16 @@
                 callbackSuccess:           function() {
                     $("#check-address").attr("disabled", false);
                     $("#status").text('success').data('status', 'success');
+                    additionalFunctionality();
                 },
                 callbackError:             function() {
                     $("#check-address").attr("disabled", false);
                     $("#status").text('error').data('status', 'error');
+                    additionalFunctionality();
                 }
             });
 
-            $("#check-address").on("click", function(e) {
-                e.preventDefault();
+            function additionalFunctionality() {
                 if($("#status").data('status')) {
                     if($("#status").data('status') === 'success') {
 
@@ -159,6 +160,11 @@
                 } else {
                     $("#messages span").text('You did not enter any address.');
                 }
+            }
+
+            $("#check-address").on("click", function(e) {
+                e.preventDefault();
+                additionalFunctionality();
             });
 
         });

@@ -14,6 +14,7 @@
         plugin.errors = null;
         plugin.lastValue = null;
         plugin.querries = 0;
+        plugin.querriesTmp = 0;
         if(!geocoder) {
             geocoder = new google.maps.Geocoder();
         }
@@ -73,6 +74,8 @@
             }
             $element.on( plugin.events, function() {
                 if( ($element.val() !== plugin.lastValue) || (plugin.errors in errorsMessages) ) {
+                    plugin.querries++;
+                    plugin.querriesTmp++;
                     plugin.settings.callbackEventFired.apply(plugin);
                     plugin.debounce();
                 }
@@ -89,13 +92,14 @@
         checkAddressCustom: function(callbackSuccess, callbackError, callbackInProgress) {
             var plugin = this;
             var $element = this.$element;
-            plugin.querries++;
+            plugin.querries = plugin.querries - plugin.querriesTmp + 1;
+            plugin.querriesTmp = 0;
             var callbackNumber = plugin.querries;
             plugin.lastValue = $element.val();
             var address = plugin.lastValue;
             plugin.showLoader();
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
-            this.geocoder.geocode({ 'address': address }, function (results, status) {
+            plugin.geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
                         if (status == google.maps.GeocoderStatus.OK) {
