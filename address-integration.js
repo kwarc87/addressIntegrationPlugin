@@ -11,7 +11,8 @@
         this.eventPrefix = '.addressIntegration'+this.guid;
         this.fullAddress = null;
         this.errors = null;
-        this.lastValue;
+        this.lastValue = null;
+        this.stopped = false;
         this.events = addPrefixesToEvents(this.settings.events, this.eventPrefix);
         if(!geocoder) {
             geocoder = new google.maps.Geocoder();
@@ -83,56 +84,64 @@
         checkAddress: function() {
             var plugin = this;
             var $element = this.$element;
-            plugin.checkAddressCustom(plugin.settings.callbackSuccess, plugin.settings.callbackError, plugin.settings.callbackInProgress);
+            plugin.checkAddressCustom(true, plugin.settings.callbackSuccess, plugin.settings.callbackError, plugin.settings.callbackInProgress);
         },
         // this function check address and execute calbacks from parameters
-        checkAddressCustom: function(callbackSuccess, callbackError, callbackInProgress) {
+        checkAddressCustom: function(setFieldsBoolean, callbackSuccess, callbackError, callbackInProgress) {
             var plugin = this;
             var $element = this.$element;
             var address = $element.val();
-            plugin.showLoader();
-            plugin.lastValue = $element.val();
-            if (callbackInProgress) { callbackInProgress.apply(plugin); }
-            this.geocoder.geocode({ 'address': address }, function (results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
-                        if (status == google.maps.GeocoderStatus.OK) {
-                            if (results[1]) {
-                                plugin.checkAddressSuccess(results, callbackSuccess);
+            if(!plugin.stopped) {
+                plugin.showLoader();
+                plugin.lastValue = $element.val();
+                if (callbackInProgress) { callbackInProgress.apply(plugin); }
+                this.geocoder.geocode({ 'address': address }, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                            if (status == google.maps.GeocoderStatus.OK) {
+                                if (results[1]) {
+                                    plugin.checkAddressSuccess(results, setFieldsBoolean, callbackSuccess);
+                                } else {
+                                    plugin.checkAddressFail('NO_RESULTS', callbackError);
+                                }
                             } else {
-                                plugin.checkAddressFail('NO_RESULTS', callbackError);
+                                plugin.checkAddressFail(status, callbackError);
                             }
-                        } else {
-                            plugin.checkAddressFail(status, callbackError);
-                        }
-                    });
-                } else {
-                    plugin.checkAddressFail(status, callbackError);
-                }
-            });
+                        });
+                    } else {
+                        plugin.checkAddressFail(status, callbackError);
+                    }
+                });
+            }
         },
-        checkAddressSuccess: function(results, callbackSuccess) {
+        checkAddressSuccess: function(results, setFieldsBoolean, callbackSuccess) {
             var plugin = this;
             var $element = this.$element;
-            if(plugin.errors !== null) {
-                plugin.errors = null;
-                plugin.hideErrors();
+            if(!plugin.stopped) {
+                if(plugin.errors !== null) {
+                    plugin.errors = null;
+                    plugin.hideErrors();
+                }
+                plugin.fullAddress = results;
+                plugin.hideLoader();
+                if(setFieldsBoolean) {
+                    plugin.setFields(plugin.fullAddress);
+                }
+                if (callbackSuccess) { callbackSuccess.apply(plugin); }
             }
-            plugin.fullAddress = results;
-            plugin.hideLoader();
-            plugin.setFields(plugin.fullAddress);
-            if (callbackSuccess) { callbackSuccess.apply(plugin); }
         },
         checkAddressFail: function(errorMessage, callbackError) {
             var plugin = this;
             var $element = this.$element;
-            plugin.errors = errorMessage;
-            plugin.hideLoader();
-            plugin.showErrors();
-            if(plugin.settings.clearFieldsOnError) {
-                plugin.clearFields();
+            if(!plugin.stopped) {
+                plugin.errors = errorMessage;
+                plugin.hideLoader();
+                plugin.showErrors();
+                if(plugin.settings.clearFieldsOnError) {
+                    plugin.clearFields();
+                }
+                if (callbackError) { callbackError.apply(plugin); }
             }
-            if (callbackError) { callbackError.apply(plugin); }
         },
         setFields: function(results) {
             var plugin = this;
@@ -179,6 +188,25 @@
         hideLoader: function() {
             var plugin = this;
             $(plugin.settings.loaderSelector).hide();
+        },
+        stop: function() {
+            var plugin = this;
+            plugin.stopped = true;
+            plugin.lastValue = null;
+            plugin.hideLoader();
+        },
+        restore: function() {
+            var plugin = this;
+            plugin.stopped = false;
+        },
+        unbindEvents: function() {
+            var plugin = this;
+            plugin.$element.off(plugin.eventPrefix);
+        },
+        destroy: function() {
+            var plugin = this;
+            plugin.unbindEvents();
+            plugin.$element.data('addressIntegration', null);
         }
     }
 

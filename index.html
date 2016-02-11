@@ -131,7 +131,7 @@
                 e.preventDefault();
                 $("#check-address").attr("disabled", true);
                 $("#address").attr("disabled", true);
-                $("#address").addressIntegration('checkAddressCustom', addressIntegrationCallbackSuccess, addressIntegrationCallbackFail);
+                $("#address").addressIntegration('checkAddressCustom', false, addressIntegrationCallbackSuccess, addressIntegrationCallbackFail);
             });
 
             function addressIntegrationCallbackSuccess() {
