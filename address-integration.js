@@ -6,24 +6,18 @@
     //constructor
     var addressIntegrationObj = function (element, options) {
         var plugin = this;
-
         plugin.guid = guid;
-
         plugin.settings = $.extend({}, addressIntegrationInterface.defaults, options);
         plugin.$element = $(element);
-
         plugin.eventPrefix = '.addressIntegration'+plugin.guid;
         plugin.events = addPrefixesToEvents(plugin.settings.events, plugin.eventPrefix);
-
         plugin.errors = null;
         plugin.lastValue = null;
         plugin.querries = 0;
-
         if(!geocoder) {
             geocoder = new google.maps.Geocoder();
         }
         plugin.geocoder = geocoder;
-
         plugin.debounce = $.debounce( plugin.settings.debounceEventsTime, function() {
             plugin.settings.callbackEventFiredAfterDebounceTime.apply(plugin);
             plugin.checkAddress();
@@ -75,11 +69,9 @@
         init: function() {
             var plugin = this;
             var $element = this.$element;
-
             if($element.val()) {
                 plugin.checkAddress();
             }
-
             $element.on( plugin.events, function() {
                 if( ($element.val() !== plugin.lastValue) || (plugin.errors in errorsMessages) ) {
                     plugin.settings.callbackEventFired.apply(plugin);
@@ -92,71 +84,51 @@
         checkAddress: function() {
             var plugin = this;
             var $element = this.$element;
-
             plugin.checkAddressCustom(plugin.settings.callbackSuccess, plugin.settings.callbackError, plugin.settings.callbackInProgress);
         },
         // this function check address and execute calbacks from parameters
         checkAddressCustom: function(callbackSuccess, callbackError, callbackInProgress) {
             var plugin = this;
             var $element = this.$element;
-
             plugin.querries++;
             var callbackNumber = plugin.querries;
-
             plugin.lastValue = $element.val();
             var address = plugin.lastValue;
-
             plugin.showLoader();
-
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
-
             this.geocoder.geocode({ 'address': address }, function (results, status) {
-
                 if (status == google.maps.GeocoderStatus.OK) {
-
                     geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
                         if (status == google.maps.GeocoderStatus.OK) {
                             if (results[1]) {
-
                                 //success
                                 plugin.queue(callbackNumber, function() {
                                     plugin.checkAddressSuccess(results, callbackSuccess);
                                 });
-
                             } else {
-
                                 //fail
                                 plugin.queue(callbackNumber, function() {
                                     plugin.checkAddressFail('NO_RESULTS', callbackError);
                                 });
-
                             }
                         } else {
-
                             //fail
                             plugin.queue(callbackNumber, function() {
                                 plugin.checkAddressFail(status, callbackError);
                             });
-
                         }
                     });
-
                 } else {
-
                     //fail
                     plugin.queue(callbackNumber, function() {
                         plugin.checkAddressFail(status, callbackError);
                     });
-
                 }
-
             });
-
         },
         //execute callback only for last request
         queue: function(callbackNumber, callback) {
             var plugin = this;
-
             if(callbackNumber === plugin.querries) {
                 callback();
             }
@@ -165,33 +137,26 @@
         checkAddressSuccess: function(results, callbackSuccess) {
             var plugin = this;
             var $element = this.$element;
-
             if(plugin.errors !== null) {
                 plugin.errors = null;
                 plugin.hideErrors();
             }
-
             plugin.hideLoader();
             plugin.setFields(results);
-
             if (callbackSuccess) { callbackSuccess.apply(plugin); }
         },
         //fail callback for function checkAddressCustom
         checkAddressFail: function(errorMessage, callbackError) {
             var plugin = this;
             var $element = this.$element;
-
             plugin.errors = errorMessage;
-
             plugin.hideLoader();
             plugin.showErrors();
-
             if (callbackError) { callbackError.apply(plugin); }
         },
         //set values for inputs from settings
         setFields: function(results) {
             var plugin = this;
-
             if (plugin.settings.countrySelector) { $(plugin.settings.countrySelector).val(getDataFromGeocodingResponse(results, 'country', 'long_name')); }
             if (plugin.settings.countryShortSelector) { $(plugin.settings.countryShortSelector).val(getDataFromGeocodingResponse(results, 'country', 'short_name')); }
             if (plugin.settings.citySelector) { $(plugin.settings.citySelector).val(getDataFromGeocodingResponse(results, 'locality', 'long_name')); }
@@ -203,7 +168,6 @@
         },
         showErrors: function() {
             var plugin = this;
-
             if(plugin.errors === 'ZERO_RESULTS' || plugin.errors === 'NO_RESULTS') {
                 $(plugin.settings.messageSelector).text(plugin.settings.customErrorMessage).show();
             } else {
@@ -216,27 +180,22 @@
         },
         hideErrors: function() {
             var plugin = this;
-
             $(plugin.settings.messageSelector).hide().empty();
         },
         showLoader: function() {
             var plugin = this;
-
             $(plugin.settings.loaderSelector).show();
         },
         hideLoader: function() {
             var plugin = this;
-
             $(plugin.settings.loaderSelector).hide();
         },
         unbindEvents: function() {
             var plugin = this;
-
             plugin.$element.off(plugin.eventPrefix);
         },
         destroy: function() {
             var plugin = this;
-
             plugin.unbindEvents();
             plugin.$element.data('addressIntegration', null);
         }
@@ -245,7 +204,6 @@
     //plugin
     function addressIntegrationInterface(methodOrOptions) {
         var methodsParameters = Array.prototype.slice.call( arguments, 1 );
-
         return this.each(function () {
             if (!$(this).data('addressIntegration')) {
                 var plugin = new addressIntegrationObj(this, methodOrOptions);
@@ -268,8 +226,9 @@
     addressIntegrationInterface.defaults = {
         events:                                     'propertychange change click keyup input paste',
         debounceEventsTime:                         250, //debounce time for events
+        customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
-        countryShortSelector:                       '#country_short', // can be set to false
+        countryShortSelector:                       '#country_short, #hidden_country_short', // can be set to false
         citySelector:                               '#city',  // can be set to false
         stateSelector:                              '#state', // can be set to false
         stateShortSelector:                         '#state_short', // can be set to false
@@ -278,7 +237,6 @@
         streetNumberSelector:                       '#street_number', // can be set to false
         loaderSelector:                             '#addressIntegrationLoader',
         messageSelector:                            '#addressIntegrationMessages',
-        customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         callbackEventFired:                         function() {  },
         callbackEventFiredAfterDebounceTime:        function() {  },
         callbackInProgress:                         function() {  },
