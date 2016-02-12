@@ -12,7 +12,7 @@
         plugin.eventPrefix = '.addressIntegration'+plugin.guid;
         plugin.events = addPrefixesToEvents(plugin.settings.events, plugin.eventPrefix);
         plugin.errors = null;
-        plugin.lastValue = null;
+        plugin.lastValue = "";
         plugin.querries = 0;
         plugin.querriesTmp = 0;
         if(!geocoder) {
@@ -97,9 +97,14 @@
             var callbackNumber = plugin.querries;
             plugin.lastValue = $element.val();
             var address = plugin.lastValue;
+            if(plugin.settings.regionCode) {
+                var query = { 'address': address, region: plugin.settings.regionCode};
+            } else {
+                var query = { 'address': address };
+            }
             plugin.showLoader();
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
-            plugin.geocoder.geocode({ 'address': address }, function (results, status) {
+            plugin.geocoder.geocode(query, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
                         if (status == google.maps.GeocoderStatus.OK) {
@@ -227,12 +232,13 @@
 
     //defaults options
     addressIntegrationInterface.defaults = {
+        regionCode:                                 false,
         events:                                     'propertychange change click keyup input paste',
         debounceEventsTime:                         250, //debounce time for events
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
         countryShortSelector:                       '#country_short', // can be set to false
-        citySelector:                               '#city',  // can be set to false
+        citySelector:                               '#city', // can be set to false
         stateSelector:                              '#state', // can be set to false
         stateShortSelector:                         '#state_short', // can be set to false
         postalCodeSelector:                         '#postal_code', // can be set to false
