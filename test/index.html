@@ -130,6 +130,7 @@
 					$('#status').text('event fired').data('status', 'event fired');
 				},
 				callbackInProgress:   function() {
+					$('#check-address').attr('disabled', true);
 					$('#status').text('in progress').data('status', 'in progress');
 				},
 				callbackSuccess:      function() {

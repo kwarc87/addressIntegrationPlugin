@@ -20,7 +20,9 @@
         }
         plugin.geocoder = geocoder;
         plugin.debounce = $.debounce( plugin.settings.debounceEventsTime, function() {
-            plugin.checkAddress();
+            if(plugin.querriesTmp !== 0) {
+                plugin.checkAddress();
+            }
         });
     }
 
@@ -96,7 +98,7 @@
             plugin.querriesTmp = 0;
             var callbackNumber = plugin.querries;
             plugin.lastValue = $element.val();
-            var address = plugin.lastValue;
+            var address = $element.val();
             if(plugin.settings.regionCode) {
                 var query = { 'address': address, region: plugin.settings.regionCode};
             } else {
