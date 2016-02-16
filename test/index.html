@@ -6,14 +6,14 @@
 	<title>Address Integration Plugin</title>
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-7s5uDGW3AHqw6xtJmNNtr+OBRJUlgkNJEo78P4b0yRw= sha512-nNo+yCHEyn0smMxSswnf/OnX6/KwJuZTlNZBjauKhTK0c+zT+q5JOCx0UFhXQ6rJR9jg6Es8gPuD2uZcYDLqSw==" crossorigin="anonymous">
 	<style type="text/css">
+		.modal .dl-horizontal {
+			margin: 0;
+		}
 		.container {
 			position: relative;
 		}
 		.content {
 			padding: 40px 15px;
-		}
-		.popup {
-			display: none;
 		}
 		.jumbotron {
 			margin-top: 20px;
@@ -31,6 +31,12 @@
 			right: 3px;
 			z-index: 10;
 		}
+		.label {
+			font-size: 13px;
+		}
+		.no-margin {
+			margin: 0 !important;
+		}
 	</style>
 </head>
 <body>
@@ -38,71 +44,121 @@
 	<div class="container">
 
 		<div class="jumbotron text-center">
-			<h1>Integration plugin demo</h1>
-			<br>
-			<p><kbd>Status:</kbd> <span id="status">Idle</span></p>
+			<h1 class="no-margin">Integration plugin demo</h1>
 		</div>
 
 		<div class="content">
 			<form action="#" method="POST">
 
+				<div class="well"><strong>Status:</strong> <span id="status"><span class="label label-info">idle</span></span></div>
+
 				<div class="form-group">
 					<div class="alert alert-danger" id="addressIntegrationMessages" style="display:none"></div>
-					<div class="alert alert-info" id="messages">
-						<strong>Messages:</strong> <span></span>
-					</div>
 				</div>
 
 				<div class="form-group has-warning">
-					<label for="address">Address</label>
+					<label for="address">Address:</label>
 					<input type="text" class="form-control input-lg" id="address" name="address" placeholder="Type your address">
 					<img id="addressIntegrationLoader" class="img-responsive integration-loader" style="display:none" src="http://loadinggif.com/images/image-selection/3.gif" alt="Loader">
 				</div>
 
 				<div class="form-group">
-					<label for="country">Country</label>
+					<label for="country">Country:</label>
 					<input type="text" class="form-control" id="country" name="country" placeholder="Country">
 				</div>
 
 				<div class="form-group">
-					<label for="country">Country Short</label>
+					<label for="country">Country Short:</label>
 					<input type="text" class="form-control" id="country_short" name="country_short" placeholder="Country Short">
 				</div>
 
 				<div class="form-group">
-					<label for="state">State</label>
+					<label for="state">State:</label>
 					<input type="text" class="form-control" id="state" name="state" placeholder="State">
 				</div>
 
 				<div class="form-group">
-					<label for="city">City</label>
+					<label for="city">City:</label>
 					<input type="text" class="form-control" id="city" name="city" placeholder="City">
 				</div>
 
 				<div class="form-group">
-					<label for="postal_code">Zip code</label>
+					<label for="postal_code">Zip code:</label>
 					<input type="text" class="form-control" id="postal_code" name="postal_code" placeholder="Zip code">
 				</div>
 
 				<div class="form-group">
-					<label for="postal_code">Street</label>
+					<label for="postal_code">Street:</label>
 					<input type="text" class="form-control" id="route" name="route" placeholder="Street">
 				</div>
 
 				<div class="form-group">
-					<label for="postal_code">Street number</label>
+					<label for="postal_code">Street number:</label>
 					<input type="text" class="form-control" id="street_number" name="street_number" placeholder="Street number">
 				</div>
 
-				<input type="hidden" id="hidden_country_short" name="hidden_country_short">
-
-				<button id="check-address" type="submit" class="btn btn-primary btn-lg btn-block">Next Step</button>
+				<button id="check-address" type="submit" class="btn btn-primary btn-lg btn-block">Show results</button>
 			</form>
 		</div>
 
 		<footer class="footer">
 			<p class="text-muted text-center">&copy; 2016 Jakub Kwarciński - <a href="http://portfolio-kwarc.pl">portfolio-kwarc.pl</a> </p>
 		</footer>
+
+		<!-- Modal -->
+		<div class="modal fade" id="address-integration-results-modal">
+		  	<div class="modal-dialog">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+			        	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        	<h4 class="modal-title">Address integration results</h4>
+			      	</div>
+			      	<div class="modal-body">
+						<dl class="dl-horizontal">
+							<dt>You entered</dt>
+						  	<dd id="address-results"></dd>
+						  	<dt>Full results</dt>
+						  	<dd id="full-results"></dd>
+						  	<hr>
+						  	<dt>Country</dt>
+						  	<dd class="country-result">Country results</dd>
+						  	<dt>State</dt>
+							<dd class="state-result">State results</dd>
+							<dt>City</dt>
+							<dd class="city-result">City results</dd>
+							<dt>Postal code</dt>
+							<dd class="postal-result">Postal code results</dd>
+							<dt>Street</dt>
+							<dd class="street-result">Street results</dd>
+							<dt>Street</dt>
+							<dd class="street-number-result">Street number results</dd>
+						</dl>
+			      	</div>
+			      	<div class="modal-footer">
+			        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			      	</div>
+		    	</div>
+		  	</div>
+		</div>
+
+		<div class="modal fade" id="address-integration-errors-modal">
+		  	<div class="modal-dialog">
+		    	<div class="modal-content">
+		      		<div class="modal-header">
+			        	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			        	<h4 class="modal-title">Address integration errors</h4>
+			      	</div>
+			      	<div class="modal-body">
+						<ul class="list-group">
+						  	<div class="alert alert-danger"><strong>Error details:</strong> <span id="address-integration-errors">You did not enter any address.</span></div>
+						</ul>
+					</div>
+			      	<div class="modal-footer">
+			        	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			      	</div>
+		    	</div>
+		  	</div>
+		</div>
 
 	</div>
 
@@ -123,49 +179,49 @@
 		$(function() {
 
 			$('#address').addressIntegration({
-				countryShortSelector: '#country_short, #hidden_country_short',
 				debounceEventsTime:   350,
 				callbackEventFired:   function() {
 					$('#check-address').attr('disabled', true);
-					$('#status').text('event fired').data('status', 'event fired');
+					$('#status').html('<span class="label label-warning">event fired</span>').data('status', 'event fired');
 				},
 				callbackInProgress:   function() {
 					$('#check-address').attr('disabled', true);
-					$('#status').text('in progress').data('status', 'in progress');
+					$('#status').html('<span class="label label-warning">in progress</span>').data('status', 'in progress');
 				},
-				callbackSuccess:      function() {
+				callbackSuccess:      function(results) {
 					$('#check-address').attr('disabled', false);
-					$('#status').text('success').data('status', 'success');
-					additionalFunctionality();
+					$('#status').html('<span class="label label-success">success</span>').data('status', 'success');
+					additionalFunctionalitySuccess(results);
 				},
-				callbackError:        function() {
+				callbackError:        function(errorMessage) {
 					$('#check-address').attr('disabled', false);
-					$('#status').text('error').data('status', 'error');
-					additionalFunctionality();
+					$('#status').html('<span class="label label-danger">error</span>').data('status', 'error');
+					additionalFunctionalityError(errorMessage);
 				}
 			});
 
-			function additionalFunctionality() {
-				if($('#status').data('status')) {
-					if($('#status').data('status') === 'success') {
-						if($('#hidden_country_short').val() === 'US') {
-							$('#messages span').text('You can go further!');
-						} else {
-							$('#messages span').text('Given address is not from US!');
-						}
-					} else if ($('#status').data('status') === 'error') {
-						$('#messages span').text('Error in address input!');
-					} else {
-						$('#messages span').text('In progress, status: ' + $('#status').data('status'));
-					}
-				} else {
-					$('#messages span').text('You did not enter any address.');
-				}
+			function additionalFunctionalitySuccess(results) {
+				$('#address-results').text($("#address").val());
+				$('#full-results').text(results[0]['formatted_address']);
+				$(".country-result").text($("#country").val());
+				$(".state-result").text($("#state").val());
+				$(".city-result").text($("#city").val());
+				$(".postal-result").text($("#postal_code").val());
+				$(".street-result").text($("#route").val());
+				$(".street-number-result").text($("#street_number").val());
+			}
+
+			function additionalFunctionalityError(errorMessage) {
+				$("#address-integration-errors").text(errorMessage);
 			}
 
 			$('#check-address').on('click', function(e) {
 				e.preventDefault();
-				additionalFunctionality();
+				if($('#status').data('status') === 'success') {
+					$("#address-integration-results-modal").modal();
+				} else {
+					$("#address-integration-errors-modal").modal();
+				}
 			});
 
 		});

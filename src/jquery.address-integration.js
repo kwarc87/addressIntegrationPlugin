@@ -153,7 +153,7 @@
             }
             plugin.hideLoader();
             plugin.setFields(results);
-            if (callbackSuccess) { callbackSuccess.apply(plugin); }
+            if (callbackSuccess) { callbackSuccess.call(plugin, results); }
         },
         //fail callback for function checkAddressCustom
         checkAddressFail: function(errorMessage, callbackError) {
@@ -162,7 +162,7 @@
             plugin.errors = errorMessage;
             plugin.hideLoader();
             plugin.showErrors();
-            if (callbackError) { callbackError.apply(plugin); }
+            if (callbackError) { callbackError.call(plugin, errorMessage); }
         },
         //set values for inputs from settings
         setFields: function(results) {
@@ -234,9 +234,9 @@
 
     //defaults options
     addressIntegrationInterface.defaults = {
-        regionCode:                                 false,
-        events:                                     'propertychange change click keyup input paste',
-        debounceEventsTime:                         250, //debounce time for events
+        regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder
+        events:                                     'propertychange change click keyup input paste', //events for populate specify fields given in options
+        debounceEventsTime:                         250, //debounce time for events fired
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
         countryShortSelector:                       '#country_short', // can be set to false
@@ -246,12 +246,12 @@
         postalCodeSelector:                         '#postal_code', // can be set to false
         routeSelector:                              '#route', // can be set to false
         streetNumberSelector:                       '#street_number', // can be set to false
-        loaderSelector:                             '#addressIntegrationLoader',
-        messageSelector:                            '#addressIntegrationMessages',
-        callbackEventFired:                         function() {  },
-        callbackInProgress:                         function() {  },
-        callbackSuccess:                            function() {  },
-        callbackError:                              function() {  }
+        loaderSelector:                             '#addressIntegrationLoader', //selector for loader image
+        messageSelector:                            '#addressIntegrationMessages', //selector for plugins messages container
+        callbackEventFired:                         function() {  }, //callback fired when events are fired
+        callbackInProgress:                         function() {  }, //callback fired when request about geographical data is in progress
+        callbackSuccess:                            function(results) {  }, //callback fired when request is done with status success
+        callbackError:                              function(errorMessage) {  } //callback fired when request is done with status error or no results
     };
 
     $.fn.addressIntegration = addressIntegrationInterface;
