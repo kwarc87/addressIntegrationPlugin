@@ -1,3 +1,12 @@
+/*!
+ * jQuery Address Integration Plugin 1.1
+ * https://github.com/kwarc87/addressIntegrationPlugin/tree/master
+ *
+ * Copyright (c) 2016 Jakub Kwarciński
+ * Released under the GPL license
+ * http://portfolio-kwarc.pl/
+ */
+
 (function() {
 
     var guid = 0;
@@ -56,6 +65,7 @@
        return false;
     }
 
+    //google maps api errors
     var errorsMessages = {
         'GOOGLE_MAPS_ERROR': 'Google maps error.',
         'OVER_QUERY_LIMIT':  'Too many queries! Please wait a moment and try again.',
@@ -82,7 +92,6 @@
                     plugin.debounce();
                 }
             });
-
         },
         // this function check address and execute calbacks from settings
         checkAddress: function() {
@@ -239,15 +248,15 @@
         debounceEventsTime:                         250, //debounce time for events fired
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
-        countryShortSelector:                       '#country_short', // can be set to false
+        countryShortSelector:                       '#country-short', // can be set to false
         citySelector:                               '#city', // can be set to false
         stateSelector:                              '#state', // can be set to false
-        stateShortSelector:                         '#state_short', // can be set to false
-        postalCodeSelector:                         '#postal_code', // can be set to false
+        stateShortSelector:                         '#state-short', // can be set to false
+        postalCodeSelector:                         '#postal-code', // can be set to false
         routeSelector:                              '#route', // can be set to false
-        streetNumberSelector:                       '#street_number', // can be set to false
-        loaderSelector:                             '#addressIntegrationLoader', //selector for loader image
-        messageSelector:                            '#addressIntegrationMessages', //selector for plugins messages container
+        streetNumberSelector:                       '#street-number', // can be set to false
+        loaderSelector:                             '#address-integration-loader', //selector for loader image
+        messageSelector:                            '#address-integration-messages', //selector for plugins messages container
         callbackEventFired:                         function() {  }, //callback fired when events are fired
         callbackInProgress:                         function() {  }, //callback fired when request for google maps api is in progress
         callbackSuccess:                            function(results) {  }, //callback fired when request is done with status success
