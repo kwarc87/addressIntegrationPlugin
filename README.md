@@ -1,7 +1,7 @@
-# j.query.address-integration
+# jquery.address-integration
 
 ## Overview
-This plugin allows user to search the best match of given piece of address using google maps API and fill the form fields with found geographical data. For example if user typed "12345" (which is postal code) in specify input, plugin can populate country, state, city and street in specify fields (given in options).
+This plugin allows user to search the best match of given piece of address (especially zip code) using google maps API and fill the form fields with found geographical data. For example if user typed "12345" (which is postal code) in specify input, plugin can populate country, state, city and street in specify fields (given in options).
 
 ## Usage
 First, you have to include the [jQuery](http://jquery.com/) and [jQuery throttle / debounce](http://benalman.com/projects/jquery-throttle-debounce-plugin/).
@@ -11,7 +11,7 @@ First, you have to include the [jQuery](http://jquery.com/) and [jQuery throttle
 <script src="jquery.ba-throttle-debounce.js" type="text/javascript"></script>
 ```
 
-### Simple initialize
+### Simple init
 
 Next you can initialize the plugin:
 
@@ -19,13 +19,13 @@ Next you can initialize the plugin:
 $('#address').addressIntegration();
 ```
 
-### Advanced initialize
+### Advanced init
 
 You can also initialize the plugin with specify options:
 
 ```js
 $('#address').addressIntegration({
-  regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder
+  regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
   events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
   debounceEventsTime:                         250, //debounce time for events fired
   customErrorMessage:                         'No results for given data, the given place propably does not exist.',
@@ -40,7 +40,7 @@ $('#address').addressIntegration({
   loaderSelector:                             '#addressIntegrationLoader', //selector for loader image
   messageSelector:                            '#addressIntegrationMessages', //selector for plugins messages container
   callbackEventFired:                         function() {  }, //callback fired when events are fired
-  callbackInProgress:                         function() {  }, //callback fired when request about geographical data is in progress
+  callbackInProgress:                         function() {  }, //callback fired when request for google maps api is in progress
   callbackSuccess:                            function() {  }, //callback fired when request is done with status success
   callbackError:                              function() {  } //callback fired when request is done with status error or no results
 });

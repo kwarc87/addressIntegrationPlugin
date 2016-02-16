@@ -234,8 +234,8 @@
 
     //defaults options
     addressIntegrationInterface.defaults = {
-        regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder
-        events:                                     'propertychange change click keyup input paste', //events for populate specify fields given in options
+        regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
+        events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
         debounceEventsTime:                         250, //debounce time for events fired
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
@@ -249,7 +249,7 @@
         loaderSelector:                             '#addressIntegrationLoader', //selector for loader image
         messageSelector:                            '#addressIntegrationMessages', //selector for plugins messages container
         callbackEventFired:                         function() {  }, //callback fired when events are fired
-        callbackInProgress:                         function() {  }, //callback fired when request about geographical data is in progress
+        callbackInProgress:                         function() {  }, //callback fired when request for google maps api is in progress
         callbackSuccess:                            function(results) {  }, //callback fired when request is done with status success
         callbackError:                              function(errorMessage) {  } //callback fired when request is done with status error or no results
     };
