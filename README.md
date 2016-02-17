@@ -25,7 +25,8 @@ You can also initialize the plugin with specify options:
 
 ```js
 $('#address').addressIntegration({
-  regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
+  regionInfluence:                            false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
+  regionRestriction:                          false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will fully restrict results to a specific country, can be set to false
   events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
   debounceEventsTime:                         250, //debounce time for events fired
   customErrorMessage:                         'No results for given data, the given place propably does not exist.',
