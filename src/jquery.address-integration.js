@@ -108,16 +108,18 @@
             var callbackNumber = plugin.querries;
             plugin.lastValue = $element.val();
             var address = $element.val();
-            if(plugin.settings.regionCode) {
-                var query = { 'address': address, region: plugin.settings.regionCode};
-            } else {
-                var query = { 'address': address };
+            var query = { 'address': address };
+            if(plugin.settings.regionInfluence) {
+                query['region'] = plugin.settings.regionInfluence;
+            }
+            if(plugin.settings.regionRestriction) {
+                query['componentRestrictions'] = {country: plugin.settings.regionRestriction};
             }
             plugin.showLoader();
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
             plugin.geocoder.geocode(query, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
-                    geocoder.geocode({'latLng': results[0].geometry.location}, function(results, status) {
+                    plugin.geocoder.geocode({'latLng': results[0].geometry.location }, function(results, status) {
                         if (status == google.maps.GeocoderStatus.OK) {
                             if (results[1]) {
                                 //success
@@ -243,7 +245,8 @@
 
     //defaults options
     addressIntegrationInterface.defaults = {
-        regionCode:                                 false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
+        regionInfluence:                            false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
+        regionRestriction:                          false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will fully restrict results to a specific country, can be set to false
         events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
         debounceEventsTime:                         250, //debounce time for events fired
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
