@@ -25,6 +25,7 @@ You can also initialize the plugin with specify options:
 
 ```js
 $('#address').addressIntegration({
+  zipcodeMode:                                false, // if set to true plugin accept only zip code typed in specify input (given during initialization)
   regionInfluence:                            false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will only influence, not fully restrict, results from the geocoder, can be set to false
   regionRestriction:                          false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will fully restrict results to a specific country, can be set to false
   events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
