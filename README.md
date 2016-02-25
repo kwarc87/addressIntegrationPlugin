@@ -30,6 +30,7 @@ $('#address').addressIntegration({
   regionRestriction:                          false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will fully restrict results to a specific country, can be set to false
   events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
   debounceEventsTime:                         250, //debounce time for events fired
+  retryTime:                                  3000, // time for query retry if too many queries
   customErrorMessage:                         'No results for given data, the given place propably does not exist.',
   countrySelector:                            '#country', // can be set to false
   countryShortSelector:                       '#country-short', // can be set to false
