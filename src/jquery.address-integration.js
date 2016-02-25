@@ -1,5 +1,5 @@
 /*!
- * jQuery Address Integration Plugin 1.1
+ * jQuery Address Integration Plugin 1.2
  * https://github.com/kwarc87/addressIntegrationPlugin/tree/master
  *
  * Copyright (c) 2016 Jakub Kwarciński
@@ -24,6 +24,7 @@
         plugin.lastValue = "";
         plugin.querries = 0;
         plugin.querriesTmp = 0;
+        plugin.timerQueryRetry = null;
         if(!geocoder) {
             geocoder = new google.maps.Geocoder();
         }
@@ -162,6 +163,7 @@
         checkAddressSuccess: function(results, callbackSuccess) {
             var plugin = this;
             var $element = this.$element;
+            clearTimeout(plugin.timerQueryRetry);
             if(plugin.errors !== null) {
                 plugin.errors = null;
                 plugin.hideErrors();
@@ -174,10 +176,18 @@
         checkAddressFail: function(errorMessage, callbackError) {
             var plugin = this;
             var $element = this.$element;
-            plugin.errors = errorMessage;
-            plugin.hideLoader();
-            plugin.showErrors();
-            if (callbackError) { callbackError.call(plugin, errorMessage); }
+            clearTimeout(plugin.timerQueryRetry);
+            if(errorMessage === 'OVER_QUERY_LIMIT') {
+                //retry query if too many queries after retryTime
+                plugin.timerQueryRetry = setTimeout(function() {
+                    plugin.checkAddress();
+                }, plugin.settings.retryTime)
+            } else {
+                plugin.errors = errorMessage;
+                plugin.hideLoader();
+                plugin.showErrors();
+                if (callbackError) { callbackError.call(plugin, errorMessage); }
+            }
         },
         //set values for inputs from settings
         setFields: function(results) {
@@ -191,6 +201,7 @@
             if (plugin.settings.routeSelector) { $(plugin.settings.routeSelector).val(getDataFromGeocodingResponse(results, 'route', 'long_name')); }
             if (plugin.settings.streetNumberSelector) { $(plugin.settings.streetNumberSelector).val(getDataFromGeocodingResponse(results, 'street_number', 'long_name')); }
         },
+        //show errors
         showErrors: function() {
             var plugin = this;
             if(plugin.errors === 'ZERO_RESULTS' || plugin.errors === 'NO_RESULTS') {
@@ -203,22 +214,27 @@
                 }
             }
         },
+        //hide errors
         hideErrors: function() {
             var plugin = this;
             $(plugin.settings.messageSelector).hide().empty();
         },
+        //show loader
         showLoader: function() {
             var plugin = this;
             $(plugin.settings.loaderSelector).show();
         },
+        //hide loader
         hideLoader: function() {
             var plugin = this;
             $(plugin.settings.loaderSelector).hide();
         },
+        //unbind events
         unbindEvents: function() {
             var plugin = this;
             plugin.$element.off(plugin.eventPrefix);
         },
+        //destroy plugin instance
         destroy: function() {
             var plugin = this;
             plugin.unbindEvents();
@@ -254,6 +270,7 @@
         regionRestriction:                          false, // region code, specified as a ccTLD ("top-level domain") two-character value, this parameter will fully restrict results to a specific country, can be set to false
         events:                                     'propertychange change click keyup input paste', //events binded to element (on which you called this plugin) for populate data to specify fields given in options
         debounceEventsTime:                         250, // debounce time for events fired
+        retryTime:                                  3000, // time for query retry if too many queries
         customErrorMessage:                         'No results for given data, the given place propably does not exist.',
         countrySelector:                            '#country', // can be set to false
         countryShortSelector:                       '#country-short', // can be set to false
