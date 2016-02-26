@@ -40,11 +40,11 @@
     var addPrefixesToEvents =  function (events, prefix) {
         var eventsArray = new Array();
         eventsArray = events.split(" ");
-        var tmp = "";
+        var eventsWithPrefix = "";
         for (var i = 0; i < eventsArray.length; i++) {
-            tmp += eventsArray[i] + prefix + " ";
+            eventsWithPrefix += eventsArray[i] + prefix + " ";
         }
-        return tmp;
+        return eventsWithPrefix;
     }
 
     var getDataFromGeocodingResponse = function (results, addressComponent, longOrShortName) {
