@@ -318,7 +318,7 @@ $('#check-address').on('click', function(e) {
                     //save and show current status of plugin flow
                     $('#status').html('<span class="label label-warning">in progress</span>').data('status', 'in progress');
                 },
-                callbackSuccess:      function(results) {
+                callbackSuccess:      function(results, formattedResults) {
                     //unblock button
                     $('#check-address').attr('disabled', false);
                     //save and show current status of plugin flow
@@ -337,7 +337,7 @@ $('#check-address').on('click', function(e) {
             });
 
             //save and show full results in bootstrap modal when plugin status is success
-            function additionalFunctionalitySuccess(results) {
+            function additionalFunctionalitySuccess(results, formattedResults) {
                 $('#address-results').text($("#address-2").val());
                 $('#full-results').text(results[0]['formatted_address']);
                 $(".country-result").text($("#country-2").val());

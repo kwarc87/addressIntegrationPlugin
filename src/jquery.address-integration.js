@@ -49,7 +49,7 @@
 
     var getDataFromGeocodingResponse = function (results, addressComponent, longOrShortName) {
         var a = results[0].address_components;
-        var data;
+        var data = null;
         for(var i = 0; i < a.length; ++i) {
             var t = a[i].types;
             if(compIsType(t, addressComponent)) {
@@ -159,10 +159,39 @@
                 callback();
             }
         },
+        createFormattedResults: function(results) {
+            return {
+                "country": {
+                    "long_name": getDataFromGeocodingResponse(results, 'country', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'country', 'short_name')
+                },
+                "city": {
+                    "long_name": getDataFromGeocodingResponse(results, 'locality', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'locality', 'short_name')
+                },
+                "state": {
+                    "long_name": getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'short_name')
+                },
+                "postal_code": {
+                    "long_name": getDataFromGeocodingResponse(results, 'postal_code', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'postal_code', 'short_name')
+                },
+                "street": {
+                    "long_name": getDataFromGeocodingResponse(results, 'route', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'route', 'short_name')
+                },
+                "street_number": {
+                    "long_name": getDataFromGeocodingResponse(results, 'street_number', 'long_name'),
+                    "short_name": getDataFromGeocodingResponse(results, 'street_number', 'short_name')
+                }
+            }
+        },
         //success callback for function checkAddressCustom
         checkAddressSuccess: function(results, callbackSuccess) {
             var plugin = this;
             var $element = this.$element;
+            var formattedResults = plugin.createFormattedResults(results);
             clearTimeout(plugin.timerQueryRetry);
             if(plugin.errors !== null) {
                 plugin.errors = null;
@@ -170,7 +199,7 @@
             }
             plugin.hideLoader();
             plugin.setFields(results);
-            if (callbackSuccess) { callbackSuccess.call(plugin, results); }
+            if (callbackSuccess) { callbackSuccess.call(plugin, results, formattedResults); }
         },
         //fail callback for function checkAddressCustom
         checkAddressFail: function(errorMessage, callbackError) {
@@ -284,7 +313,7 @@
         messageSelector:                            '#address-integration-messages', // selector for plugins messages container
         callbackEventFired:                         function() {  }, // callback fired when events are fired
         callbackInProgress:                         function() {  }, // callback fired when request for google maps api is in progress
-        callbackSuccess:                            function(results) {  }, // callback fired when request is done with status success
+        callbackSuccess:                            function(results, formattedResults) {  }, // callback fired when request is done with status success
         callbackError:                              function(errorMessage) {  } // callback fired when request is done with status error or no results
     };
 
