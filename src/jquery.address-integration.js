@@ -124,9 +124,9 @@
             if (callbackInProgress) { callbackInProgress.apply(plugin); }
             plugin.geocoder.geocode(query, function (results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
-                    plugin.geocoder.geocode({'latLng': results[0].geometry.location }, function(results, status) {
+                    plugin.geocoder.geocode({'placeId': results[0].place_id}, function(results, status) {
                         if (status == google.maps.GeocoderStatus.OK) {
-                            if (results[1]) {
+                            if (results[0]) {
                                 //success
                                 plugin.queue(callbackNumber, function() {
                                     plugin.checkAddressSuccess(results, callbackSuccess);

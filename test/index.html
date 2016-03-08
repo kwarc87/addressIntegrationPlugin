@@ -296,6 +296,8 @@ $('#check-address').on('click', function(e) {
             $('#address').addressIntegration();
 
             $('#address-2').addressIntegration({
+                zipcodeMode:                                true,
+                regionInfluence:                            "US",
                 countrySelector:                            '#country-2',
                 countryShortSelector:                       '#country-short-2',
                 citySelector:                               '#city-2',
