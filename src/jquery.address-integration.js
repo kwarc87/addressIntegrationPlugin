@@ -221,14 +221,30 @@
         //set values for inputs from settings
         setFields: function(results) {
             var plugin = this;
-            if (plugin.settings.countrySelector) { $(plugin.settings.countrySelector).val(getDataFromGeocodingResponse(results, 'country', 'long_name')); }
-            if (plugin.settings.countryShortSelector) { $(plugin.settings.countryShortSelector).val(getDataFromGeocodingResponse(results, 'country', 'short_name')); }
-            if (plugin.settings.citySelector) { $(plugin.settings.citySelector).val(getDataFromGeocodingResponse(results, 'locality', 'long_name')); }
-            if (plugin.settings.stateSelector) { $(plugin.settings.stateSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name')); }
-            if (plugin.settings.stateShortSelector) { $(plugin.settings.stateShortSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'short_name')); }
-            if (plugin.settings.postalCodeSelector) { $(plugin.settings.postalCodeSelector).val(getDataFromGeocodingResponse(results, 'postal_code', 'long_name')); }
-            if (plugin.settings.routeSelector) { $(plugin.settings.routeSelector).val(getDataFromGeocodingResponse(results, 'route', 'long_name')); }
-            if (plugin.settings.streetNumberSelector) { $(plugin.settings.streetNumberSelector).val(getDataFromGeocodingResponse(results, 'street_number', 'long_name')); }
+            if ((plugin.settings.countrySelector) && (getDataFromGeocodingResponse(results, 'country', 'long_name'))) {
+                $(plugin.settings.countrySelector).val(getDataFromGeocodingResponse(results, 'country', 'long_name'));
+            }
+            if ((plugin.settings.countryShortSelector) && (getDataFromGeocodingResponse(results, 'country', 'short_name'))) {
+                $(plugin.settings.countryShortSelector).val(getDataFromGeocodingResponse(results, 'country', 'short_name'));
+            }
+            if ((plugin.settings.citySelector) && (getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'))) {
+                $(plugin.settings.citySelector).val(getDataFromGeocodingResponse(results, 'locality', 'long_name'));
+            }
+            if ((plugin.settings.stateSelector) && (getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'))) {
+                $(plugin.settings.stateSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'));
+            }
+            if ((plugin.settings.stateShortSelector) && (getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'short_name'))) {
+                $(plugin.settings.stateShortSelector).val(getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'short_name'));
+            }
+            if ((plugin.settings.postalCodeSelector) && (getDataFromGeocodingResponse(results, 'postal_code', 'long_name'))) {
+                $(plugin.settings.postalCodeSelector).val(getDataFromGeocodingResponse(results, 'postal_code', 'long_name'));
+            }
+            if ((plugin.settings.routeSelector) && (getDataFromGeocodingResponse(results, 'route', 'long_name'))) {
+                $(plugin.settings.routeSelector).val(getDataFromGeocodingResponse(results, 'route', 'long_name'));
+            }
+            if ((plugin.settings.streetNumberSelector) && (getDataFromGeocodingResponse(results, 'street_number', 'long_name'))) {
+                $(plugin.settings.streetNumberSelector).val(getDataFromGeocodingResponse(results, 'street_number', 'long_name'));
+            }
         },
         //show errors
         showErrors: function() {
