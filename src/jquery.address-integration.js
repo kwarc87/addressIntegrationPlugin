@@ -227,7 +227,7 @@
             if ((plugin.settings.countryShortSelector) && (getDataFromGeocodingResponse(results, 'country', 'short_name'))) {
                 $(plugin.settings.countryShortSelector).val(getDataFromGeocodingResponse(results, 'country', 'short_name'));
             }
-            if ((plugin.settings.citySelector) && (getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'))) {
+            if ((plugin.settings.citySelector) && (getDataFromGeocodingResponse(results, 'locality', 'long_name'))) {
                 $(plugin.settings.citySelector).val(getDataFromGeocodingResponse(results, 'locality', 'long_name'));
             }
             if ((plugin.settings.stateSelector) && (getDataFromGeocodingResponse(results, 'administrative_area_level_1', 'long_name'))) {
